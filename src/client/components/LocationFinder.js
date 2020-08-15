@@ -3,59 +3,59 @@ import Button from 'react-bootstrap/Button';
 import Form from 'react-bootstrap/Form'
 import axios from 'axios'
 import Loader from 'react-loader';
+import { useState } from 'react'
 
-export default class LocationFinder extends Component {
+export default function LocationFinder() {
+  const [location, setLoaction] = useState('')
+  const [polygonRegion, setPolygonRegion] = useState('')
+  const [loader, setLoader] = useState(true)
+  const [error, setError] = useState('')
 
-  state = { location: '', polygonRegion: '', loader: true };
-  onType = (e) => {
-    this.setState({
-      location: e.target.value
-    })
+  function onType (e) {
+    setLoaction(e.target.value)
   }
 
-  callEndPoint(e) {
-		this.setState({
-				loader: false
-		})
+  function callEndPoint(e) {
+    setLoader(false)
+    setPolygonRegion('')
+    setError('')
     e.preventDefault()
     axios.post('/api/outlet/location', {
-      location: this.state.location
+      location: location
     })
       .then((response) => {
-
-        console.log(response)
-        this.setState({
-          polygonRegion: response.data.location,
-          loader: true
-        })
+        setPolygonRegion(response.data.location)
+        setLoader(true)
       })
-      .catch( (error) => {
-          this.setState({loader: true})
-        console.log(error);
+      .catch((error) => {
+        setLoader(true)
+        console.log(error)
+        setError(error.message)
       });
   }
 
-  render() {
-    const { location } = this.state;
-    return (
-        <Loader loaded={this.state.loader}>
+
+  return (
+    <Loader loaded={loader}>
       <div className="container">
-        <h1>Polygon Finder </h1>
+        <h1>Delivery Region Finder </h1>
         <Form>
           <Form.Group controlId="formBasicEmail">
             <Form.Label>Location</Form.Label>
-            <Form.Control type="text" placeholder="Enter the location" onChange={this.onType.bind(this)} value={this.state.location} />
+            <Form.Control type="text" placeholder="Enter the location" onChange={(e) => onType(e)} value={location} />
             <Form.Text className="text-muted">
               Please Enter the Location  for which you wish to find the circle
     				</Form.Text>
           </Form.Group>
-          <Button variant="primary" type="submit" onClick={this.callEndPoint.bind(this)}>
+          <Button disabled={!location} variant="primary" type="submit" onClick={(e) => callEndPoint(e)}>
             Submit
   				</Button>
         </Form>
-        {this.state.polygonRegion ? this.state.polygonRegion : ''}
+
+       {polygonRegion ? <div className="polygon-output">Delivery Region - {polygonRegion ? polygonRegion : ''}</div> : ""}
+       {error ? <div className="polygon-output">ErrorMessage - {error ? error : ''}</div> : ''}
+
       </div>
-      </Loader>
-    );
-  }
+    </Loader>
+  );
 }

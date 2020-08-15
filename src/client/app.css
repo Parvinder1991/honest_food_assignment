@@ -10,3 +10,8 @@ body {
 .container {
   width: 30%;
 }
+
+.polygon-output {
+  font-weight: 600;
+  font-size: 20px
+}
